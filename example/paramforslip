@@ -1,0 +1,11 @@
+# aquila
+nx=281
+ny=176
+dx=100.
+moment=4.53e18
+rigidity=3.3e10
+nb cracks=20000
+rmin=10
+rmax=.2
+seed=456
+gaussian number=0
