@@ -1,4 +1,17 @@
-# aquila
+# This example shows how to add a k2 distribution on top
+# of the low frequency slip distribution of L'Aquila earthquake
+# obtained by an inversion (Cirella et al. 20??)
+# The slip distribution is sampled at 100 m for 281x176 squares.
+# The normalization target is the moment (it may be the stress
+# drop).
+# The k2 part is simulated with a fractal distribution of 20000
+# cracks with radius spanning from 10 m up to .2*faultwidth.
+# As this LF distribution exists, the gaussian number is set to
+# 0 and a p.tmp file is present in the tmp directory.
+# run "slipk2 input=paramforslip" and Voila. The result is the
+# file tmp/d.tmp.
+# You can visualize it with gnuplot for example :
+# plot 'd.tmp' binary array=(281,176) scan=yx flipy with image
 nx=281
 ny=176
 dx=100.

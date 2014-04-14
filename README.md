@@ -18,3 +18,8 @@ Create/transform a slip distribution to be compatible with a k2 slip distributio
  If the gaussian number in the input file is null, The code
  will expect an existing p.tmp file.
 
+ To see the probability function or the slip distribution (a
+ simple 2d binary array) use with ximage
+         ximage n1={ny} < d.tmp
+ and with gnuplot
+   gnuplot> plot 'd.tmp' binary array=({nx},{ny}) scan=yx flipy with image

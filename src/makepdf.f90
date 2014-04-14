@@ -1,4 +1,9 @@
 module makepdf
+!######################################################
+! Author : André Herrero
+! Contact : andherit@gmail.com, andre.herrero@ingv.it
+! Public Domain (CC0 1.0 Universal)
+!######################################################
 
 contains
 
