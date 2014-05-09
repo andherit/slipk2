@@ -12,12 +12,12 @@ implicit none
 contains
 
 !*********************************************************
-function fparsearrf(namef,keyword,vvalue,nv,sep)
+function fparsearrf(nit,keyword,vvalue,nv,sep)
 implicit none
 
-      integer :: nv
+      integer :: nv,nit
       real*4, dimension(nv) :: vvalue
-      character*(*) :: namef,keyword
+      character*(*) :: keyword
       character*1 :: sep
       logical :: fparsearrf
 
@@ -26,9 +26,9 @@ implicit none
       logical :: dummy
 
       fparsearrf=.false.
-      open(24,file=namef)
+      rewind(nit)
       do while (.not.fparsearrf)
-         read(24,'(a)',end=10) line
+         read(nit,'(a)',end=10) line
          if (linematchkeyword(line,keyword,k)) then
             linecrt=line(k:lnblnk(line))
             line=linecrt
@@ -46,8 +46,7 @@ implicit none
             fparsearrf=.true.
          endif
       enddo
-10    close(24)
-      return
+10    return
 end function fparsearrf
 !*********************************************************
 subroutine parsefile(m,n,dx,sd,ng,gauss,mu,na,rmin,rmax,seed,m0,sct,dvd)
@@ -98,7 +97,10 @@ subroutine parsefile(m,n,dx,sd,ng,gauss,mu,na,rmin,rmax,seed,m0,sct,dvd)
   if (parse_arg('rmax',rmax,nit) /= PARSE_OK) stop 'maximum radius missing/syntax error'
   if (parse_arg('seed',seed,nit) /= PARSE_OK) stop 'seed number missing/syntax error'
   if (parse_arg('gaussian number',ng,nit) /= PARSE_OK) stop 'ng missing/syntax error'
-  if (ng == 0) return
+  if (ng == 0) then
+     close(nit)
+     return
+  endif
   allocate(gauss(ng,4))
   do i=1,ng
 ! safe up to 99. need to be improved with a log calculation
@@ -109,8 +111,9 @@ subroutine parsefile(m,n,dx,sd,ng,gauss,mu,na,rmin,rmax,seed,m0,sct,dvd)
         s4='[  ]'
         write(s4(2:3),'(i2.2)') i
      endif
-     if (.not.fparsearrf(fileparam,s4,val4,4,dvd)) then
+     if (.not.fparsearrf(nit,s4,val4,4,dvd)) then
         write(0,*) 'missing info for gaussian number#',i
+        close(nit)
         stop 
      else
         do j=1,4
@@ -118,6 +121,7 @@ subroutine parsefile(m,n,dx,sd,ng,gauss,mu,na,rmin,rmax,seed,m0,sct,dvd)
         enddo
      endif
   enddo
+  close(nit)
   return
 end subroutine parsefile
 !############################################################

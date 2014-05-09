@@ -36,7 +36,7 @@ use pdf2slip
 
 ! If you want to change to divider character (for example ' ')
 ! for the gaussian values, change the following variable
-  dvd=';'
+  dvd=','
   call parsefile(m,n,dx,sd,ng,gauss,mu,na,rmin,rmax,seed,moment,sct,dvd)
   allocate(fp(m*n))
   if (ng /= 0) then
