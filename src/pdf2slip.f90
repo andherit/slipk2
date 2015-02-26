@@ -9,7 +9,7 @@ implicit none
 contains
 
 !***********************************************************
-subroutine pdfslipfract(fp,m,n,dx,seed,moment,sd,mu,na,rmin,rmax,verb,sct)
+subroutine pdfslipfract(fp,m,n,dx,seed,moment,sd,mu,na,rmin,rmax,verb,sct,sws)
   implicit none
 
 ! create a D2 fractal distribution of na asperities on
@@ -23,36 +23,51 @@ subroutine pdfslipfract(fp,m,n,dx,seed,moment,sd,mu,na,rmin,rmax,verb,sct)
 !       na : number of asperities
 !       mu : the rigidity
 
-  integer :: m,n,na,seed,verb,sct
+  integer :: m,n,na,seed,verb,sct,sws
   real*4 :: fp(m*n),dx,moment,sd,mu,rmin,rmax
 
   integer :: i,j,k,idxmax,lmin,lmax,wmin,wmax,lx,wx
   integer :: imax,jmax,idx
   real*4, dimension(:), allocatable :: r,pdf
   real*4, parameter :: pi=acos(-1.)
-  real*4 :: p,d,slp,cslp
+  real*4 :: p,d,slp,cslp,length,width
   real*4 :: pdfmax,curint,numrnd,mf,mg,mn
 
+  real*4 :: rad
+
 ! scaling factor : moment or stress drop
-  if (sct == 1) then
-     moment=sd*dx**3.*(m-1)**2.*(n-1)
+  if (sws == 0) then
+     length=m*dx
+     width=n*dx
   else
-     sd=moment/(dx**3.*(m-1)**2.*(n-1))
+     length=(m-1)*dx
+     width=(n-1)*dx
+  endif
+  if (sct == 1) then
+     moment=sd*length**2.*width
+  else
+     sd=moment/(length**2.*width)
   endif
 ! initialization of the random generator
   call srand(seed)
 ! Eshelby's constant
   cslp=24/7/pi*sd/mu
 ! min/max of the radius distribution
-  rmax=(n-1)*dx*rmax
+  rmax=width*rmax
   rmin=dx*rmin
 ! fractal parameter
-  p=7./16.*moment/sd/(rmax-rmin)
+! D=2
+! p=7./16.*moment/sd/(rmax-rmin)
+! D=1
+  p=2.*7./16.*moment/sd/(rmax**2.-rmin**2.)
 ! memory allocation
   allocate(r(na),pdf(m*n))
 ! fractal distribution of the radii (Zeng el al. 1994)
   do i=1,na
-     r(i)=(2.*rand(0)*float(na)/p+rmax**(-2.))**(-.5)
+! D=2
+!    r(i)=(2.*rand(0)*float(na)/p+rmax**(-2.))**(-.5)
+! D=1
+     r(i)=(rand(0)*float(na)/p+rmax**(-1.))**(-1)
   enddo
 ! Sort of the distribution by size
   call reorder(r,na)
@@ -121,7 +136,8 @@ subroutine pdfslipfract(fp,m,n,dx,seed,moment,sd,mu,na,rmin,rmax,verb,sct)
   do i=1,m*n
      mf=mf+fp(i)
   enddo
-  mf=mf*dx**2.*mu
+  mf=mf/m/n
+  mf=mf*length*width*mu
   if (verb.eq.1) write(0,*) 100*(mf-moment)/moment,'%'
   mg=0.
   do i=1,m*n
@@ -130,6 +146,16 @@ subroutine pdfslipfract(fp,m,n,dx,seed,moment,sd,mu,na,rmin,rmax,verb,sct)
   enddo
   mg=mg/float(m*n)
   write(0,*) 'du medio : ',mg
+  write(0,*) '####################### Stress Drop ##################'
+  write(0,*) ' mo/S/L : ', sd
+  mf=maxval(fp)
+  j=0
+  do i=1,m*n
+     if (fp(i) > mf*.001) j=j+1
+  enddo
+  write(0,*) 'effective slip surface : ',float(j)/float(m*n)*100.,"%"
+  rad=sqrt(float(j)*dx*dx/3.1415926)
+  write(0,*) ' asperity equivalent : ',moment*7/16/rad**3.
   return
 end subroutine pdfslipfract
 

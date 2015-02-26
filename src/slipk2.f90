@@ -21,6 +21,7 @@
 ! 14/04/14 Version 1.1 The parser module is removed from
 !                      this archive to its own one (forparse)
 !                      Signature and CC added.
+! 20/10/14 Version 1.2 Adding a switch for node or pixel defined slip
 !######################################################
 program slipk2
 use inout
@@ -28,8 +29,8 @@ use makepdf
 use pdf2slip
   implicit none
 
-  integer :: m,n,ng,seed,i,na,sct
-  real*4, dimension(:,:), allocatable :: gauss
+  type(slippdfinputs) :: spdfi
+  integer :: m,n,seed,i,na,sct,j,idx,sws
   real*4, dimension(:), allocatable :: fp
   real*4 :: dx,sd,moment,mu,rmin,rmax,sd1
       character*1 dvd
@@ -37,11 +38,11 @@ use pdf2slip
 ! If you want to change to divider character (for example ' ')
 ! for the gaussian values, change the following variable
   dvd=','
-  call parsefile(m,n,dx,sd,ng,gauss,mu,na,rmin,rmax,seed,moment,sct,dvd)
+  call parsefile(m,n,dx,sd,spdfi,mu,na,rmin,rmax,seed,moment,sct,dvd,sws)
   allocate(fp(m*n))
-  if (ng /= 0) then
+  if (spdfi%gn /= 0) then
      write(0,'(a,$)') 'computing pdf ...'
-     call faultpdf(gauss,ng,fp,m,n,dx)
+     call faultpdf(spdfi,fp,m,n,dx,sws)
      open(10,file='tmp/p.tmp',form='unformatted',access='direct',recl=4*m*n)
      write(10,rec=1) (fp(i),i=1,m*n)
   else
@@ -52,7 +53,7 @@ use pdf2slip
   close(10)
   write(0,*) ' done!'
   write(0,'(a,$)') 'computing slip ...'
-  call pdfslipfract(fp,m,n,dx,seed,moment,sd,mu,na,rmin,rmax,1,sct)
+  call pdfslipfract(fp,m,n,dx,seed,moment,sd,mu,na,rmin,rmax,1,sct,sws)
   write(0,*) ' done!'
   write(0,*) 'writing ...'
   open(10,file='tmp/d.tmp',form='unformatted',access='direct',recl=4*m*n)

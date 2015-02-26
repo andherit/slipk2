@@ -21,13 +21,13 @@ nb cracks=20000
 rmin=10
 rmax=.2
 seed=456
-gaussian number=0
+slip gaussian number=0
 # To create your own probability function, you may use a sum of
 # gaussian function. Each gaussian is defined by the coordinates
 # of its centre on the fault plane, its sigma and its weight. To
 # test it, just comment with a # the line above and uncomment the
 # three next lines. Warning ... Doing that, the original p.tmp will
 # be overwritten.
-#gaussian number=2
-#[1]=7000.,9000.,4000.,1.
-#[2]=21000.,9000.,2000.,2.
+#slip gaussian number=2
+#s[1]=7000.,9000.,4000.,1.
+#s[2]=21000.,9000.,2000.,2.

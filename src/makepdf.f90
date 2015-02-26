@@ -5,21 +5,27 @@ module makepdf
 ! Public Domain (CC0 1.0 Universal)
 !######################################################
 
+  type slippdfinputs
+    integer :: gn
+    real*4, dimension(:,:), allocatable :: gauss   
+  end type slippdfinputs
+
 contains
 
 !***********************************************************
-subroutine faultpdf(gauss,ng,fp,m,n,dx)
+subroutine faultpdf(spdfi,fp,m,n,dx,sws)
   implicit none
       
-!  read a list of ng 2D gaussian defined by their
+!  read a list of sgn 2D gaussian defined by their
 !  center (xi,yi), their sigma (sigi) iand their weight (wgti)
 !  to construct on the fault plane, a pdf compatible with
 !  the subroutine pdfslipfract.
-!  The fault plane is defined by its nodes through an array
-!  fp(m,n) of dimension (m-1)dx*(n-1)dx
+!  The fault plane is defined through an array fp(m,n). The fault
+!  dimension is (m-1)dx*(n-1)dx in the node mode (sws=1) or
+!  mdx*ndx in the pixel mode
 
-   integer :: m,n,ng
-   real*4, dimension(ng,4) :: gauss
+   integer :: m,n,sws
+   type(slippdfinputs) :: spdfi
    real*4, dimension(m*n) :: fp
    real*4 :: dx
 
@@ -30,14 +36,22 @@ subroutine faultpdf(gauss,ng,fp,m,n,dx)
    fp=0.
    fpint=0.
    do i=1,m
-      xl=(i-1)*dx
+      if (sws == 1) then
+         xl=(i-1)*dx
+      else
+         xl=(i-.5)*dx
+      endif
       do j=1,n
-         yl=(j-1)*dx
+         if (sws == 1) then
+            yl=(j-1)*dx
+         else
+            yl=(j-.5)*dx
+         endif
          idx=j+(i-1)*n
-         do k=1,ng
-            dst2=(yl-gauss(k,2))**2.+(xl-gauss(k,1))**2.
-            unormgauss=exp(-dst2/2./gauss(k,3)**2.)
-            fp(idx)=fp(idx)+unormgauss*gauss(k,4)
+         do k=1,spdfi%gn
+            dst2=(yl-spdfi%gauss(k,2))**2.+(xl-spdfi%gauss(k,1))**2.
+            unormgauss=exp(-dst2/2./spdfi%gauss(k,3)**2.)
+            fp(idx)=fp(idx)+unormgauss*spdfi%gauss(k,4)
          enddo
          fpint=fpint+fp(idx)
       enddo
